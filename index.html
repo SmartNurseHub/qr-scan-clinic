@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>QR Scanner - Clinic</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+body {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+#reader {
+  width: 300px;
+  margin: auto;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📦 มิตรไมตรีคลินิกเวชกรรม</h2>
+<p>ยิง QR เพื่อนับของ</p>
+
+<div id="reader"></div>
+
+<p id="status">สถานะ: พร้อมสแกน</p>
+
+<script>
+const API_URL = "YOUR_APPS_SCRIPT_URL"; // 🔥 ใส่ URL ของคุณ
+
+let lastScan = "";
+
+function onScanSuccess(decodedText) {
+
+  if(decodedText === lastScan) return;
+  lastScan = decodedText;
+
+  document.getElementById("status").innerText = "กำลังบันทึก...";
+
+  try {
+    const data = JSON.parse(decodedText);
+
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(data)
+    })
+    .then(() => {
+      document.getElementById("status").innerText = "✅ บันทึกแล้ว";
+    });
+
+    if(navigator.vibrate){
+      navigator.vibrate(100);
+    }
+
+  } catch(e) {
+    alert("QR ไม่ถูกต้อง");
+  }
+}
+
+new Html5QrcodeScanner("reader", { fps: 10 }).render(onScanSuccess);
+</script>
+
+</body>
+</html>
