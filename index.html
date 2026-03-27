@@ -2,18 +2,28 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>QR Scanner - Clinic</title>
+<title>QR Scanner - มิตรไมตรีคลินิกเวชกรรม</title>
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
 body {
   font-family: sans-serif;
   text-align: center;
+  background: #f5f5f5;
+}
+
+h2 {
+  color: #0d47a1;
 }
 
 #reader {
   width: 300px;
   margin: auto;
+}
+
+#status {
+  margin-top: 10px;
+  font-size: 18px;
 }
 </style>
 </head>
@@ -28,16 +38,17 @@ body {
 <p id="status">สถานะ: พร้อมสแกน</p>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbw2p-TKu0E8UTjon95YBZ9Sc4Rv9d9Jb2mYt5cNX6gm_-W0nrcQm-fqmXAs3JeCKRpIZw/exec"; // 🔥 ใส่ URL ของคุณ
+const API_URL = "https://script.google.com/macros/s/AKfycbw2p-TKu0E8UTjon95YBZ9Sc4Rv9d9Jb2mYt5cNX6gm_-W0nrcQm-fqmXAs3JeCKRpIZw/exec";
 
 let lastScan = "";
 
 function onScanSuccess(decodedText) {
 
+  // กันยิงซ้ำ
   if(decodedText === lastScan) return;
   lastScan = decodedText;
 
-  document.getElementById("status").innerText = "กำลังบันทึก...";
+  document.getElementById("status").innerText = "⏳ กำลังบันทึก...";
 
   try {
     const data = JSON.parse(decodedText);
@@ -48,14 +59,24 @@ function onScanSuccess(decodedText) {
     })
     .then(() => {
       document.getElementById("status").innerText = "✅ บันทึกแล้ว";
+
+      // 🔊 เสียงแจ้งเตือน
+      new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3").play();
+
+      // 📳 สั่น (Android)
+      if(navigator.vibrate){
+        navigator.vibrate(100);
+      }
+
+      // reset กันยิงซ้ำ
+      setTimeout(() => {
+        lastScan = "";
+        document.getElementById("status").innerText = "📦 พร้อมสแกน";
+      }, 1500);
     });
 
-    if(navigator.vibrate){
-      navigator.vibrate(100);
-    }
-
   } catch(e) {
-    alert("QR ไม่ถูกต้อง");
+    document.getElementById("status").innerText = "❌ QR ไม่ถูกต้อง";
   }
 }
 
